@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toggle Calculator</title>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      --text: #333;
+      --panel: #ffffff;
+      --btn-default: #f3f3f3;
+      --btn-hover: #e0f7fa;
+      --btn-glow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      --operator: #ffb74d;
+      --equal: #66bb6a;
+      --clear: #ef5350;
+    }
+
+    .dark {
+      --bg: linear-gradient(135deg, #2c3e50, #4ca1af);
+      --text: #f5f5f5;
+      --panel: #333;
+      --btn-default: #555;
+      --btn-hover: #666;
+      --btn-glow: 0 4px 10px rgba(255, 255, 255, 0.2);
+      --operator: #ff9800;
+      --equal: #4caf50;
+      --clear: #e53935;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: var(--text);
+      transition: 0.3s;
+    }
+
+    .calculator {
+      background: var(--panel);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+      width: 340px;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.8);}
+      to {opacity: 1; transform: scale(1);}
+    }
+
+    .display {
+      background: #000;
+      color: #0f0;
+      font-size: 2rem;
+      padding: 15px;
+      text-align: right;
+      border-radius: 15px;
+      margin-bottom: 5px;
+      height: 50px;
+      overflow-x: auto;
+    }
+
+    .preview {
+      text-align: right;
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 10px;
+      height: 20px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    .buttons button {
+      padding: 18px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      background: var(--btn-default);
+      color: var(--text);
+      box-shadow: var(--btn-glow);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .buttons button:hover {
+      background-color: var(--btn-hover);
+      transform: scale(1.05);
+    }
+
+    .buttons .operator {
+      background-color: var(--operator);
+    }
+
+    .buttons .equal {
+      background-color: var(--equal);
+      color: white;
+    }
+
+    .buttons .clear {
+      background-color: var(--clear);
+      color: white;
+    }
+
+    .buttons .wide {
+      grid-column: span 2;
+    }
+
+    .mode-toggle {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .mode-toggle button {
+      padding: 5px 10px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background-color: #444;
+      color: white;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator-container">
+    <div class="calculator">
+      <div class="mode-toggle">
+        <button onclick="toggleDarkMode()">Toggle Mode</button>
+      </div>
+      <div class="preview" id="preview"></div>
+      <div class="display" id="display">0</div>
+      <div class="buttons">
+        <button onclick="playClick(); clearDisplay()" class="clear">C</button>
+        <button onclick="playClick(); append('%')">%</button>
+        <button onclick="playClick(); append('/')">/</button>
+        <button onclick="playClick(); append('*')" class="operator">×</button>
+
+        <button onclick="playClick(); append('7')">7</button>
+        <button onclick="playClick(); append('8')">8</button>
+        <button onclick="playClick(); append('9')">9</button>
+        <button onclick="playClick(); append('-')" class="operator">−</button>
+
+        <button onclick="playClick(); append('4')">4</button>
+        <button onclick="playClick(); append('5')">5</button>
+        <button onclick="playClick(); append('6')">6</button>
+        <button onclick="playClick(); append('+')" class="operator">+</button>
+
+        <button onclick="playClick(); append('1')">1</button>
+        <button onclick="playClick(); append('2')">2</button>
+        <button onclick="playClick(); append('3')">3</button>
+        <button onclick="playClick(); calculate()" class="equal">=</button>
+
+        <button onclick="playClick(); append('0')" class="wide">0</button>
+        <button onclick="playClick(); append('.')">.</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="click-sound" src="https://www.fesliyanstudios.com/play-mp3/387"></audio>
+
+  <script>
+    const display = document.getElementById('display');
+    const preview = document.getElementById('preview');
+    const clickSound = document.getElementById('click-sound');
+
+    function playClick() {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
+
+    function append(value) {
+      if (display.innerText === "0" || display.innerText === "Error") {
+        display.innerText = value;
+      } else {
+        display.innerText += value;
+      }
+      updatePreview();
+    }
+
+    function clearDisplay() {
+      display.innerText = "0";
+      preview.innerText = "";
+    }
+
+    function calculate() {
+      try {
+        let result = eval(display.innerText);
+        preview.innerText = display.innerText + " =";
+        display.innerText = result;
+      } catch {
+        display.innerText = "Error";
+        preview.innerText = "";
+      }
+    }
+
+    function updatePreview() {
+      try {
+        let result = eval(display.innerText);
+        preview.innerText = "= " + result;
+      } catch {
+        preview.innerText = "";
+      }
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
+  </script>
+
+</body>
+</html>
